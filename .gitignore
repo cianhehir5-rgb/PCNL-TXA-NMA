@@ -1,0 +1,20 @@
+# R data files
+*.RData
+*.Rhistory
+
+# R Markdown files
+*.Rmd
+*.Rproj
+
+# Output files
+*.pdf
+*.docx
+*.html
+
+# Local files
+.Rproj.user/
+
+# Other ignores
+*.csv
+*.txt
+*.log
