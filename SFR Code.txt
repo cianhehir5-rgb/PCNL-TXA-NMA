@@ -1,0 +1,166 @@
+> library(netmeta)
+> library(dpylr)
+Error in library(dpylr) : there is no package called ‘dpylr’
+> library(dplyr)
+> dat <- read.csv(file.choose())
+> summary(dat)
+    Study                T                   N               R        
+ Length:10          Length:10          Min.   : 25.0   Min.   :24.00  
+ Class :character   Class :character   1st Qu.: 80.0   1st Qu.:28.75  
+ Mode  :character   Mode  :character   Median : 82.0   Median :59.00  
+                                       Mean   : 76.6   Mean   :54.00  
+                                       3rd Qu.: 96.5   3rd Qu.:69.25  
+                                       Max.   :100.0   Max.   :91.00  
+> head(dat, 20)
+       Study              T   N  R
+1  Batagello         IV TXA  95 40
+2  Batagello        Control  97 25
+3      Kumar         IV TXA 100 91
+4      Kumar        Control 100 82
+5     Rashid         IV TXA  25 25
+6     Rashid        Control  25 24
+7    Choudry         IV TXA  80 64
+8    Choudry Irrigation TXA  80 71
+9    Iskakov         IV TXA  82 61
+10   Iskakov        Control  82 57
+> pw <- pairwise(
++   treat = T,
++   event = R,
++   n = N,
++   studlab = Study,
++   data = dat,
++   sm = "RR"
++ )
+> 
+> head(pw, 20)
+    studlab treat1         treat2          TE       seTE event1  n1 event2  n2 incr1 incr2     Study     T1             T2  N1  N2 R1 R2
+1 Batagello IV TXA        Control  0.49083772 0.21015329     40  95     25  97   0.0   0.0 Batagello IV TXA        Control  95  97 40 25
+2     Kumar IV TXA        Control  0.10414026 0.05642812     91 100     82 100   0.0   0.0     Kumar IV TXA        Control 100 100 91 82
+3    Rashid IV TXA        Control  0.04000533 0.04000800     25  25     24  25   0.5   0.5    Rashid IV TXA        Control  25  25 25 24
+4   Choudry IV TXA Irrigation TXA -0.10379679 0.06862585     64  80     71  80   0.0   0.0   Choudry IV TXA Irrigation TXA  80  80 64 71
+5   Iskakov IV TXA        Control  0.06782260 0.09770905     61  82     57  82   0.0   0.0   Iskakov IV TXA        Control  82  82 61 57
+> nma <- netmeta(
++   TE = TE,
++   seTE = seTE,
++   treat1 = treat1,
++   treat2 = treat2,
++   studlab = studlab,
++   data = pw,
++   sm = "RR",
++   random = TRUE,
++   reference.group = "Control"
++ )
+> 
+> summary(nma)
+Original data:
+
+                  treat1 treat2      TE   seTE
+Batagello        Control IV TXA -0.4908 0.2102
+Kumar            Control IV TXA -0.1041 0.0564
+Rashid           Control IV TXA -0.0400 0.0400
+Choudry   Irrigation TXA IV TXA  0.1038 0.0686
+Iskakov          Control IV TXA -0.0678 0.0977
+
+Number of treatment arms per study:
+          narms
+Batagello     2
+Kumar         2
+Rashid        2
+Choudry       2
+Iskakov       2
+
+Results (common effects model):
+
+                  treat1 treat2     RR           95%-CI    Q leverage
+Batagello        Control IV TXA 0.9313 [0.8770; 0.9889] 3.99     0.02
+Kumar            Control IV TXA 0.9313 [0.8770; 0.9889] 0.34     0.29
+Rashid           Control IV TXA 0.9313 [0.8770; 0.9889] 0.61     0.59
+Choudry   Irrigation TXA IV TXA 1.1094 [0.9698; 1.2691] 0.00     1.00
+Iskakov          Control IV TXA 0.9313 [0.8770; 0.9889] 0.00     0.10
+
+Results (random effects model):
+
+                  treat1 treat2     RR           95%-CI
+Batagello        Control IV TXA 0.9167 [0.8367; 1.0043]
+Kumar            Control IV TXA 0.9167 [0.8367; 1.0043]
+Rashid           Control IV TXA 0.9167 [0.8367; 1.0043]
+Choudry   Irrigation TXA IV TXA 1.1094 [0.9314; 1.3213]
+Iskakov          Control IV TXA 0.9167 [0.8367; 1.0043]
+
+Number of studies: k = 5
+Number of pairwise comparisons: m = 5
+Number of treatments: n = 3
+Number of designs: d = 2
+
+Common effects model
+
+Treatment estimate (other treatments vs 'Control'):
+                   RR           95%-CI    z p-value
+Control             .                .    .       .
+Irrigation TXA 1.1912 [1.0281; 1.3803] 2.33  0.0199
+IV TXA         1.0738 [1.0112; 1.1402] 2.32  0.0201
+
+Random effects model
+
+Treatment estimate (other treatments vs 'Control'):
+                   RR           95%-CI    z p-value
+Control             .                .    .       .
+Irrigation TXA 1.2102 [0.9936; 1.4740] 1.90  0.0580
+IV TXA         1.0909 [0.9957; 1.1951] 1.87  0.0618
+
+Quantifying heterogeneity / inconsistency:
+tau^2 = 0.0032; tau = 0.0570; I^2 = 39.2% [0.0%; 79.3%]
+
+Tests of heterogeneity (within designs) and inconsistency (between designs):
+                   Q d.f. p-value
+Total           4.94    3  0.1765
+Within designs  4.94    3  0.1765
+Between designs 0.00    0      --
+
+Details of network meta-analysis methods:
+- Frequentist graph-theoretical approach
+- DerSimonian-Laird estimator for tau^2
+- Calculation of I^2 based on Q
+> netgraph(nma)
+> netleague(nma)
+League table (common effects model):
+                                                                        
+                 Control                       . 0.9313 [0.8770; 0.9889]
+ 0.8395 [0.7245; 0.9727]          Irrigation TXA 1.1094 [0.9698; 1.2691]
+ 0.9313 [0.8770; 0.9889] 1.1094 [0.9698; 1.2691]                  IV TXA
+
+League table (random effects model):
+                                                                        
+                 Control                       . 0.9167 [0.8367; 1.0043]
+ 0.8263 [0.6784; 1.0065]          Irrigation TXA 1.1094 [0.9314; 1.3213]
+ 0.9167 [0.8367; 1.0043] 1.1094 [0.9314; 1.3213]                  IV TXA
+
+Lower triangle: results from network meta-analysis (column vs row)
+Upper triangle: results from direct comparisons (row vs column)
+> nr <- netrank(nma, small.values = "bad")
+> nr$Pscore
+[1] "'Pscore' replaced by 'ranking.common' and 'ranking.random'."
+> data.frame(
++   Treatment = names(nr$Pscore),
++   P_score = nr$Pscore
++ )
+Error in data.frame(Treatment = names(nr$Pscore), P_score = nr$Pscore) : 
+  arguments imply differing number of rows: 0, 1
+> nr <- netrank(nma, small.values = "bad")
+> 
+> nr$ranking.common
+       Control Irrigation TXA         IV TXA 
+   0.009986695    0.962429851    0.527583455 
+> nr$ranking.random
+       Control Irrigation TXA         IV TXA 
+    0.02994299     0.92437742     0.54567958 
+> data.frame(
++   Treatment = names(nr$ranking.random),
++   P_score = nr$ranking.random
++ )
+                    Treatment    P_score
+Control               Control 0.02994299
+Irrigation TXA Irrigation TXA 0.92437742
+IV TXA                 IV TXA 0.54567958
+> forest(nma)
+> 

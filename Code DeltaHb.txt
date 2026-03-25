@@ -1,0 +1,226 @@
+> library(netmeta)
+> library(dlpyr)
+Error in library(dlpyr) : there is no package called ‘dlpyr’
+> library(dplyr)
+> source("/Users/cianhehir/Desktop/Desktop - Cian’s MacBook Air/CSV_NMA_PCNL/DeltaHb CSV.csv")
+Error in source("/Users/cianhehir/Desktop/Desktop - Cian’s MacBook Air/CSV_NMA_PCNL/DeltaHb CSV.csv") : 
+  /Users/cianhehir/Desktop/Desktop - Cian’s MacBook Air/CSV_NMA_PCNL/DeltaHb CSV.csv:1:6: unexpected ','
+1: Study,
+         ^
+> dat <- read.csv(file.choose())
+> 
+> dat <- read.csv(file.choose())
+> head(dat)
+     Study          T Mean    SD  N  X
+1 Caliskan         IV 0.00 0.741 25 NA
+2 Caliskan Irrigation 0.00 0.741 25 NA
+3 Caliskan    Control 1.00 0.741 25 NA
+4 Mokhtari         IV 0.98 0.980 54 NA
+5 Mokhtari    Control 2.27 0.890 54 NA
+6  Sichani         IV 1.30 0.800 64 NA
+> str(dat)
+'data.frame':	15 obs. of  6 variables:
+ $ Study: chr  "Caliskan" "Caliskan" "Caliskan" "Mokhtari" ...
+ $ T    : chr  "IV" "Irrigation" "Control" "IV" ...
+ $ Mean : num  0 0 1 0.98 2.27 1.3 1.6 1.71 2.67 0.45 ...
+ $ SD   : num  0.741 0.741 0.741 0.98 0.89 0.8 1.2 0.89 1.23 0.35 ...
+ $ N    : int  25 25 25 54 54 64 66 200 200 25 ...
+ $ X    : logi  NA NA NA NA NA NA ...
+> summary(dat)
+    Study                T                  Mean             SD               N             X          
+ Length:15          Length:15          Min.   :0.000   Min.   :0.0100   Min.   : 25.00   Mode:logical  
+ Class :character   Class :character   1st Qu.:0.990   1st Qu.:0.3900   1st Qu.: 25.00   NA's:15       
+ Mode  :character   Mode  :character   Median :1.300   Median :0.7410   Median : 64.00                 
+                                       Mean   :1.345   Mean   :0.6789   Mean   : 72.47                 
+                                       3rd Qu.:1.890   3rd Qu.:0.8900   3rd Qu.: 81.00                 
+                                       Max.   :2.670   Max.   :1.2300   Max.   :200.00                 
+> dat <- dat [. 1:5]
+Error: unexpected numeric constant in "dat <- dat [. 1"
+> dat <- dat[, 1:5]
+> head(dat)
+     Study          T Mean    SD  N
+1 Caliskan         IV 0.00 0.741 25
+2 Caliskan Irrigation 0.00 0.741 25
+3 Caliskan    Control 1.00 0.741 25
+4 Mokhtari         IV 0.98 0.980 54
+5 Mokhtari    Control 2.27 0.890 54
+6  Sichani         IV 1.30 0.800 64
+> pw <- pairwise(
++   treat = T,
++   mean = Mean,
++   sd = SD,
++   n = N,
++   studlab = Study,
++   data = dat,
++   sm = "MD"
++ )
+> head(pw)
+            studlab     treat1     treat2    TE      seTE  n1 mean1   sd1  n2 mean2   sd2             Study         T1         T2 Mean1 Mean2   SD1   SD2  N1  N2
+1          Caliskan         IV    Control -1.00 0.2095864  25  0.00 0.741  25  1.00 0.741          Caliskan         IV    Control  0.00  1.00 0.741 0.741  25  25
+2          Caliskan         IV Irrigation  0.00 0.2095864  25  0.00 0.741  25  0.00 0.741          Caliskan         IV Irrigation  0.00  0.00 0.741 0.741  25  25
+3          Caliskan Irrigation    Control -1.00 0.2095864  25  0.00 0.741  25  1.00 0.741          Caliskan Irrigation    Control  0.00  1.00 0.741 0.741  25  25
+4          Mokhtari         IV    Control -1.29 0.1801491  54  0.98 0.980  54  2.27 0.890          Mokhtari         IV    Control  0.98  2.27 0.980 0.890  54  54
+5           Sichani         IV    Control -0.30 0.1783765  64  1.30 0.800  66  1.60 1.200           Sichani         IV    Control  1.30  1.60 0.800 1.200  64  66
+6 Bansal and Aurora Irrigation    Control -0.96 0.1073546 200  1.71 0.890 200  2.67 1.230 Bansal and Aurora Irrigation    Control  1.71  2.67 0.890 1.230 200 200
+> nma <- netmeta(
++   TE = TE,
++   seTE = seTE,
++   treat1 = treat1,
++   treat2 = treat2,
++   studlab = studlab,
++   data = pw,
++   sm = "MD",
++   random = TRUE,
++   reference.group = "Control"
++ )
+> summary(nma)
+Original data (with adjusted standard errors for multi-arm studies):
+
+                      treat1     treat2      TE   seTE seTE.adj.c seTE.adj.r narms multiarm
+Caliskan             Control         IV  1.0000 0.2096     0.2567     0.4468     3        *
+Caliskan          Irrigation         IV -0.0000 0.2096     0.2567     0.4468     3        *
+Caliskan             Control Irrigation  1.0000 0.2096     0.2567     0.4468     3        *
+Mokhtari             Control         IV  1.2900 0.1801     0.1801     0.3488     2         
+Sichani              Control         IV  0.3000 0.1784     0.1784     0.3479     2         
+Bansal and Aurora    Control Irrigation  0.9600 0.1074     0.1074     0.3173     2         
+Rashid               Control         IV  0.5500 0.1156     0.1156     0.3202     2         
+Choudhury         Irrigation         IV -0.2200 0.0617     0.0617     0.3050     2         
+Iskakov              Control         IV  1.1300 0.0409     0.0409     0.3014     2         
+
+Number of treatment arms per study (by decreasing number of arms):
+                  narms multiarm
+Caliskan              3        *
+Mokhtari              2         
+Sichani               2         
+Bansal and Aurora     2         
+Rashid                2         
+Choudhury             2         
+Iskakov               2         
+
+Results (common effects model):
+
+                      treat1     treat2      MD             95%-CI     Q leverage
+Caliskan             Control         IV  1.0158 [ 0.9476;  1.0840]  0.00        .
+Caliskan          Irrigation         IV -0.1387 [-0.2410; -0.0364]  0.29        .
+Caliskan             Control Irrigation  1.1545 [ 1.0422;  1.2668]  0.36        .
+Mokhtari             Control         IV  1.0158 [ 0.9476;  1.0840]  2.32     0.04
+Sichani              Control         IV  1.0158 [ 0.9476;  1.0840] 16.10     0.04
+Bansal and Aurora    Control Irrigation  1.1545 [ 1.0422;  1.2668]  3.28     0.28
+Rashid               Control         IV  1.0158 [ 0.9476;  1.0840] 16.23     0.09
+Choudhury         Irrigation         IV -0.1387 [-0.2410; -0.0364]  1.73     0.71
+Iskakov              Control         IV  1.0158 [ 0.9476;  1.0840]  7.81     0.73
+
+Results (random effects model):
+
+                      treat1     treat2      MD            95%-CI
+Caliskan             Control         IV  0.8455 [ 0.5681; 1.1229]
+Caliskan          Irrigation         IV -0.1393 [-0.5179; 0.2393]
+Caliskan             Control Irrigation  0.9848 [ 0.6035; 1.3661]
+Mokhtari             Control         IV  0.8455 [ 0.5681; 1.1229]
+Sichani              Control         IV  0.8455 [ 0.5681; 1.1229]
+Bansal and Aurora    Control Irrigation  0.9848 [ 0.6035; 1.3661]
+Rashid               Control         IV  0.8455 [ 0.5681; 1.1229]
+Choudhury         Irrigation         IV -0.1393 [-0.5179; 0.2393]
+Iskakov              Control         IV  0.8455 [ 0.5681; 1.1229]
+
+Number of studies: k = 7
+Number of pairwise comparisons: m = 9
+Number of treatments: n = 3
+Number of designs: d = 4
+
+Common effects model
+
+Treatment estimate (other treatments vs 'Control'):
+                MD             95%-CI      z  p-value
+Control          .                  .      .        .
+Irrigation -1.1545 [-1.2668; -1.0422] -20.15 < 0.0001
+IV         -1.0158 [-1.0840; -0.9476] -29.18 < 0.0001
+
+Random effects model
+
+Treatment estimate (other treatments vs 'Control'):
+                MD             95%-CI     z  p-value
+Control          .                  .     .        .
+Irrigation -0.9848 [-1.3661; -0.6035] -5.06 < 0.0001
+IV         -0.8455 [-1.1229; -0.5681] -5.97 < 0.0001
+
+Quantifying heterogeneity / inconsistency:
+tau^2 = 0.0892; tau = 0.2986; I^2 = 87.5% [76.6%; 93.4%]
+
+Tests of heterogeneity (within designs) and inconsistency (between designs):
+                    Q d.f.  p-value
+Total           48.14    6 < 0.0001
+Within designs  41.95    3 < 0.0001
+Between designs  6.19    3   0.1028
+
+Details of network meta-analysis methods:
+- Frequentist graph-theoretical approach
+- DerSimonian-Laird estimator for tau^2
+- Calculation of I^2 based on Q
+> netgraph(nma)
+> netgraph(net)
+> netgraph(nma)
+> forest(nma)
+> netleague(nma)
+League table (common effects model):
+                                                                                
+                   Control  0.9683 [ 0.7810;  1.1556]  1.0410 [ 0.9698;  1.1121]
+ 1.1545 [ 1.0422;  1.2668]                 Irrigation -0.2024 [-0.3185; -0.0863]
+ 1.0158 [ 0.9476;  1.0840] -0.1387 [-0.2410; -0.0364]                         IV
+
+League table (random effects model):
+                                                                                
+                   Control  0.9772 [ 0.5079;  1.4465]  0.8579 [ 0.5650;  1.1509]
+ 0.9848 [ 0.6035;  1.3661]                 Irrigation -0.1295 [-0.5881;  0.3291]
+ 0.8455 [ 0.5681;  1.1229] -0.1393 [-0.5179;  0.2393]                         IV
+
+Lower triangle: results from network meta-analysis (column vs row)
+Upper triangle: results from direct comparisons (row vs column)
+> res_iv_irr <- data.frame(
++   comparison = "IV vs Irrigation",
++   TE = nma$TE.random["IV", "Irrigation"],
++   SE = nma$seTE.random["IV", "Irrigation"],
++   lower_CI = nma$lower.random["IV", "Irrigation"],
++   upper_CI = nma$upper.random["IV", "Irrigation"],
++   z = nma$statistic.random["IV", "Irrigation"],
++   p = nma$pval.random["IV", "Irrigation"]
++ )
+> 
+> res_iv_irr <- data.frame(
++   comparison = "IV vs Irrigation",
++   TE = nma$TE.random["IV", "Irrigation"],
++   SE = nma$seTE.random["IV", "Irrigation"],
++   lower_CI = nma$lower.random["IV", "Irrigation"],
++   upper_CI = nma$upper.random["IV", "Irrigation"],
++   z = nma$statistic.random["IV", "Irrigation"],
++   p = nma$pval.random["IV", "Irrigation"]
++ )
+> 
+> res_iv_irr
+        comparison        TE        SE   lower_CI upper_CI         z         p
+1 IV vs Irrigation 0.1393034 0.1931763 -0.2393152 0.517922 0.7211207 0.4708353
+> res_iv_irr <- data.frame(
++   comparison = "IV vs Irrigation",
++   MD = nma$TE.random["IV", "Irrigation"],
++   SE = nma$seTE.random["IV", "Irrigation"],
++   lower_CI = nma$lower.random["IV", "Irrigation"],
++   upper_CI = nma$upper.random["IV", "Irrigation"],
++   z = nma$statistic.random["IV", "Irrigation"],
++   p = nma$pval.random["IV", "Irrigation"]
++ )
+> 
+> res_iv_irr
+        comparison        MD        SE   lower_CI upper_CI         z         p
+1 IV vs Irrigation 0.1393034 0.1931763 -0.2393152 0.517922 0.7211207 0.4708353
+> nma$trts
+[1] "Control"    "Irrigation" "IV"        
+> nma$TE.random["IV", "Irrigation"]
+[1] 0.1393034
+> nma$TE.random["Irrigation", "IV"]
+[1] -0.1393034
+> netrank(nma)
+           P-score (common) P-score (random)
+Irrigation            0.998           0.8823
+IV                    0.502           0.6177
+Control               0.000           0.0000
+> 

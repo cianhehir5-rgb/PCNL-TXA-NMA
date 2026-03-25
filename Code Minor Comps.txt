@@ -1,0 +1,221 @@
+
+R version 4.5.2 (2025-10-31) -- "[Not] Part in a Rumble"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[R.app GUI 1.82 (8556) aarch64-apple-darwin20]
+
+[Workspace restored from /Users/cianhehir/.RData]
+[History restored from /Users/cianhehir/.Rapp.history]
+
+> library(netmeta)
+Loading required package: meta
+Loading required package: metadat
+Loading 'meta' package (version 8.2-1).
+Type 'help(meta)' for a brief overview.
+Loading 'netmeta' package (version 3.3-1).
+Type 'help("netmeta-package")' for a brief overview.
+> library(dplyr)
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+> dat <- read.csv(file.choose())
+> head(dat)
+      Study          T   N   R
+1 Batagello         IV  95  11
+2 Batagello    Control  97  15
+3    Bansal Irrigation 200  76
+4    Bansal    Control 200 102
+5   Choudry         IV  80  27
+6   Choudry Irrigation  80  19
+> head(dat, 20)
+      Study          T   N   R
+1 Batagello         IV  95  11
+2 Batagello    Control  97  15
+3    Bansal Irrigation 200  76
+4    Bansal    Control 200 102
+5   Choudry         IV  80  27
+6   Choudry Irrigation  80  19
+7   Iskakov         IV  82  22
+8   Iskakov    Control  82  42
+> library(meta)
+> library(netmeta)
+> library(dplyr)
+> 
+> pw <- pairwise(
++   treat = T,
++   event = R,
++   n = N,
++   studlab = Study,
++   data = dat,
++   sm = "RR"
++ )
+> 
+> head(pw)
+    studlab     treat1     treat2         TE      seTE event1  n1 event2  n2 incr1 incr2     Study         T1         T2  N1  N2 R1  R2
+1 Batagello         IV    Control -0.2893208 0.3697839     11  95     15  97     0     0 Batagello         IV    Control  95  97 11  15
+2    Bansal Irrigation    Control -0.2942395 0.1138500     76 200    102 200     0     0    Bansal Irrigation    Control 200 200 76 102
+3   Choudry         IV Irrigation  0.3513979 0.2543002     27  80     19  80     0     0   Choudry         IV Irrigation  80  80 27  19
+4   Iskakov         IV    Control -0.6466272 0.2118344     22  82     42  82     0     0   Iskakov         IV    Control  82  82 22  42
+> nma <- netmeta(
++   TE = TE,
++   seTE = seTE,
++   treat1 = treat1,
++   treat2 = treat2,
++   studlab = studlab,
++   data = pw,
++   sm = "RR",
++   random = TRUE,
++   reference.group = "Control"
++ )
+> 
+> summary(nma)
+Original data:
+
+              treat1     treat2      TE   seTE
+Batagello    Control         IV  0.2893 0.3698
+Bansal       Control Irrigation  0.2942 0.1138
+Choudry   Irrigation         IV -0.3514 0.2543
+Iskakov      Control         IV  0.6466 0.2118
+
+Number of treatment arms per study:
+          narms
+Batagello     2
+Bansal        2
+Choudry       2
+Iskakov       2
+
+Results (common effects model):
+
+              treat1     treat2     RR           95%-CI    Q leverage
+Batagello    Control         IV 1.4502 [1.0736; 1.9590] 0.05     0.17
+Bansal       Control Irrigation 1.4417 [1.1689; 1.7782] 0.40     0.88
+Choudry   Irrigation         IV 1.0059 [0.7283; 1.3892] 1.97     0.42
+Iskakov      Control         IV 1.4502 [1.0736; 1.9590] 1.68     0.52
+
+Results (random effects model):
+
+              treat1     treat2     RR           95%-CI
+Batagello    Control         IV 1.4526 [0.9324; 2.2629]
+Bansal       Control Irrigation 1.5740 [1.0005; 2.4763]
+Choudry   Irrigation         IV 0.9229 [0.5562; 1.5312]
+Iskakov      Control         IV 1.4526 [0.9324; 2.2629]
+
+Number of studies: k = 4
+Number of pairwise comparisons: m = 4
+Number of treatments: n = 3
+Number of designs: d = 3
+
+Common effects model
+
+Treatment estimate (other treatments vs 'Control'):
+               RR           95%-CI     z p-value
+Control         .                .     .       .
+Irrigation 0.6936 [0.5624; 0.8555] -3.42  0.0006
+IV         0.6896 [0.5105; 0.9315] -2.42  0.0154
+
+Random effects model
+
+Treatment estimate (other treatments vs 'Control'):
+               RR           95%-CI     z p-value
+Control         .                .     .       .
+Irrigation 0.6353 [0.4038; 0.9995] -1.96  0.0498
+IV         0.6884 [0.4419; 1.0725] -1.65  0.0988
+
+Quantifying heterogeneity / inconsistency:
+tau^2 = 0.0608; tau = 0.2466; I^2 = 51.3% [0.0%; 85.9%]
+
+Tests of heterogeneity (within designs) and inconsistency (between designs):
+                  Q d.f. p-value
+Total           4.1    2  0.1285
+Within designs  0.7    1  0.4018
+Between designs 3.4    1  0.0652
+
+Details of network meta-analysis methods:
+- Frequentist graph-theoretical approach
+- DerSimonian-Laird estimator for tau^2
+- Calculation of I^2 based on Q
+> netgraph(nma)
+> netleague(nma)
+League table (common effects model):
+                                                                        
+                 Control 1.3421 [1.0737; 1.6776] 1.7478 [1.2191; 2.5058]
+ 1.4417 [1.1689; 1.7782]              Irrigation 0.7037 [0.4275; 1.1584]
+ 1.4502 [1.0736; 1.9590] 1.0059 [0.7283; 1.3892]                      IV
+
+League table (random effects model):
+                                                                        
+                 Control 1.3421 [0.7882; 2.2853] 1.6856 [1.0079; 2.8189]
+ 1.5740 [1.0005; 2.4763]              Irrigation 0.7037 [0.3515; 1.4089]
+ 1.4526 [0.9324; 2.2629] 0.9229 [0.5562; 1.5312]                      IV
+
+Lower triangle: results from network meta-analysis (column vs row)
+Upper triangle: results from direct comparisons (row vs column)
+> nr <- netrank(nma, small.values = "good")
+> 
+> nr$ranking.common
+    Control  Irrigation          IV 
+0.004010185 0.742757429 0.753232386 
+> nr$ranking.random
+   Control Irrigation         IV 
+ 0.0371477  0.7985592  0.6642931 
+> res_iv_irr <- data.frame(
++   comparison = "IV vs Irrigation",
++   RR = exp(nma$TE.random["IV", "Irrigation"]),
++   SE = nma$seTE.random["IV", "Irrigation"],
++   lower_CI = exp(nma$lower.random["IV", "Irrigation"]),
++   upper_CI = exp(nma$upper.random["IV", "Irrigation"],
++   ),
++   z = nma$statistic.random["IV", "Irrigation"],
++   p = nma$pval.random["IV", "Irrigation"]
++ )
+Error in exp(nma$upper.random["IV", "Irrigation"], ) : 
+  argument 2 is empty
+> 
+> res_iv_irr
+        comparison        MD        SE   lower_CI upper_CI         z        p
+1 IV vs Irrigation 0.3981561 0.4372557 -0.4588493 1.255162 0.9105795 0.362517
+> res_iv_irr <- data.frame(
++   comparison = "IV vs Irrigation",
++   RR = exp(nma$TE.random["IV", "Irrigation"]),
++   SE = nma$seTE.random["IV", "Irrigation"],
++   lower_CI = exp(nma$lower.random["IV", "Irrigation"]),
++   upper_CI = exp(nma$upper.random["IV", "Irrigation"]),
++   z = nma$statistic.random["IV", "Irrigation"],
++   p = nma$pval.random["IV", "Irrigation"]
++ )
+> 
+> res_iv_irr
+        comparison       RR        SE  lower_CI upper_CI         z         p
+1 IV vs Irrigation 1.083587 0.2583356 0.6530828 1.797875 0.3107474 0.7559926
+> forest(nma)
+> nr <- netrank(nma, small.values = "good")
+> nr$ranking.common
+    Control  Irrigation          IV 
+0.004010185 0.742757429 0.753232386 
+> nr$ranking.random
+   Control Irrigation         IV 
+ 0.0371477  0.7985592  0.6642931 
+> 

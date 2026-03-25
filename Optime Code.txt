@@ -1,0 +1,255 @@
+> library(netmeta)
+> library(readr)
+> source("/Users/cianhehir/Desktop/Desktop - Cian’s MacBook Air/CSV_NMA_PCNL/OpTimeCSV.csv")
+Error in source("/Users/cianhehir/Desktop/Desktop - Cian’s MacBook Air/CSV_NMA_PCNL/OpTimeCSV.csv") : 
+  /Users/cianhehir/Desktop/Desktop - Cian’s MacBook Air/CSV_NMA_PCNL/OpTimeCSV.csv:1:6: unexpected ','
+1: Study,
+         ^
+> dat <- read_csv("/Users/cianhehir/Desktop/Desktop - Cian’s MacBook Air/CSV_NMA_PCNL/OpTimeCSV.csv")
+Rows: 12 Columns: 5                                                                                                                                                                                                     
+── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Delimiter: ","
+chr (2): Study, T
+dbl (3): Mean, SD, N
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+> head(dat)
+# A tibble: 6 × 5
+  Study    T           Mean    SD     N
+  <chr>    <chr>      <dbl> <dbl> <dbl>
+1 Mokhtari IV         124.   30.6    54
+2 Mokhtari Control    130.   29.4    54
+3 Sichani  IV         105.   31.7    64
+4 Sichani  Control    112.   35.5    66
+5 Bansal   Irrigation  68.4  37.2   200
+6 Bansal   Control     87.6  29.4   200
+> str(dat)
+spc_tbl_ [12 × 5] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
+ $ Study: chr [1:12] "Mokhtari" "Mokhtari" "Sichani" "Sichani" ...
+ $ T    : chr [1:12] "IV" "Control" "IV" "Control" ...
+ $ Mean : num [1:12] 124.2 129.6 105.4 111.7 68.5 ...
+ $ SD   : num [1:12] 30.6 29.4 31.7 35.5 37.2 ...
+ $ N    : num [1:12] 54 54 64 66 200 200 25 25 120 120 ...
+ - attr(*, "spec")=
+  .. cols(
+  ..   Study = col_character(),
+  ..   T = col_character(),
+  ..   Mean = col_double(),
+  ..   SD = col_double(),
+  ..   N = col_double()
+  .. )
+ - attr(*, "problems")=<externalptr> 
+> library(netmeta)
+> library(dplyr)
+> pw <- pairwise(
++   treat = treatment,
++   mean = mean,
++   sd = sd,
++   n = n,
++   studlab = study,
++   data = dat,
++   sm = "MD"
++ )
+Error in eval(matchcall[[match(argname, names(matchcall))]], data, enclos = encl) : 
+  object 'study' not found
+> library(dplyr)
+> 
+> dat <- dat %>%
++   rename(
++     study = Study,
++     treatment = T,
++     mean = Mean,
++     sd = SD,
++     n = N
++   )
+> > library(netmeta)
+Error: unexpected '>' in ">"
+> > library(dplyr)
+Error: unexpected '>' in ">"
+> > pw <- pairwise(
+Error: unexpected '>' in ">"
+> +   treat = treatment,
+Error: unexpected ',' in "+   treat = treatment,"
+> +   mean = mean,
+Error: unexpected ',' in "+   mean = mean,"
+> +   sd = sd,
+Error: unexpected ',' in "+   sd = sd,"
+> +   n = n,
+Error: unexpected ',' in "+   n = n,"
+> +   studlab = study,
+Error: unexpected ',' in "+   studlab = study,"
+> +   data = dat,
+Error: unexpected ',' in "+   data = dat,"
+> +   sm = "MD"
+Error: object 'sm' not found
+> names(dat)
+[1] "study"     "treatment" "mean"      "sd"        "n"        
+> pw <- pairwise(
++   treat = treatment,
++   mean = mean,
++   sd = sd,
++   n = n,
++   studlab = study,
++   data = dat,
++   sm = "MD"
++ )
+> net <- netmeta(
++   TE = pw$TE,
++   seTE = pw$seTE,
++   treat1 = pw$treat1,
++   treat2 = pw$treat2,
++   studlab = pw$studlab,
++   data = pw,
++   sm = "MD",
++   random = TRUE,
++   reference.group = "Control"
++ )
+> summary(net)
+Original data:
+
+          treat1     treat2      TE   seTE
+Mokhtari Control         IV  5.4000 5.7747
+Sichani  Control         IV  6.3000 5.8988
+Bansal   Control Irrigation 19.1700 3.3549
+Rashid   Control         IV 14.0000 4.7406
+Siddiq   Control         IV  5.0000 4.2321
+Iskakov  Control         IV 12.6000 0.8356
+
+Number of treatment arms (by study):
+         narms
+Mokhtari     2
+Sichani      2
+Bansal       2
+Rashid       2
+Siddiq       2
+Iskakov      2
+
+Results (common effects model):
+
+          treat1     treat2      MD             95%-CI    Q leverage
+Mokhtari Control         IV 12.1231 [10.5694; 13.6767] 1.36     0.02
+Sichani  Control         IV 12.1231 [10.5694; 13.6767] 0.97     0.02
+Bansal   Control Irrigation 19.1700 [12.5946; 25.7454] 0.00     1.00
+Rashid   Control         IV 12.1231 [10.5694; 13.6767] 0.16     0.03
+Siddiq   Control         IV 12.1231 [10.5694; 13.6767] 2.83     0.04
+Iskakov  Control         IV 12.1231 [10.5694; 13.6767] 0.33     0.90
+
+Results (random effects model):
+
+          treat1     treat2      MD             95%-CI
+Mokhtari Control         IV 10.4742 [ 6.8326; 14.1158]
+Sichani  Control         IV 10.4742 [ 6.8326; 14.1158]
+Bansal   Control Irrigation 19.1700 [11.1419; 27.1981]
+Rashid   Control         IV 10.4742 [ 6.8326; 14.1158]
+Siddiq   Control         IV 10.4742 [ 6.8326; 14.1158]
+Iskakov  Control         IV 10.4742 [ 6.8326; 14.1158]
+
+Number of studies: k = 6
+Number of pairwise comparisons: m = 6
+Number of treatments: n = 3
+Number of designs: d = 2
+
+Common effects model
+
+Treatment estimate (sm = 'MD', comparison: other treatments vs 'Control'):
+                 MD               95%-CI      z  p-value
+Control           .                    .      .        .
+Irrigation -19.1700 [-25.7454; -12.5946]  -5.71 < 0.0001
+IV         -12.1231 [-13.6767; -10.5694] -15.29 < 0.0001
+
+Random effects model
+
+Treatment estimate (sm = 'MD', comparison: other treatments vs 'Control'):
+                 MD               95%-CI     z  p-value
+Control           .                    .     .        .
+Irrigation -19.1700 [-27.1981; -11.1419] -4.68 < 0.0001
+IV         -10.4742 [-14.1158;  -6.8326] -5.64 < 0.0001
+
+Quantifying heterogeneity / inconsistency:
+tau^2 = 5.5224; tau = 2.3500; I^2 = 29.1% [0.0%; 72.5%]
+
+Tests of heterogeneity (within designs) and inconsistency (between designs):
+                   Q d.f. p-value
+Total           5.65    4  0.2273
+Within designs  5.65    4  0.2273
+Between designs 0.00    0      --
+
+Details of network meta-analysis methods:
+- Frequentist graph-theoretical approach
+- DerSimonian-Laird estimator for tau^2
+- Calculation of I^2 based on Q
+> forest(net)
+> netgraph(net)
+> netrank(net, small.values = "good")
+           P-score (common) P-score (random)
+Irrigation           0.9898           0.9867
+IV                   0.5102           0.5133
+Control              0.0000           0.0000
+> netleague(net)
+League table (common effects model):
+                                                                                       
+                      Control 19.1700 [ 12.5946;  25.7454] 12.1231 [ 10.5694;  13.6767]
+ 19.1700 [ 12.5946;  25.7454]                   Irrigation                            .
+ 12.1231 [ 10.5694;  13.6767] -7.0469 [-13.8034;  -0.2905]                           IV
+
+League table (random effects model):
+                                                                                       
+                      Control 19.1700 [ 11.1419;  27.1981] 10.4742 [  6.8326;  14.1158]
+ 19.1700 [ 11.1419;  27.1981]                   Irrigation                            .
+ 10.4742 [  6.8326;  14.1158] -8.6958 [-17.5112;   0.1196]                           IV
+
+Lower triangle: results from network meta-analysis (column vs row)
+Upper triangle: results from direct comparisons (row vs column)
+> netcontrast( net, c("IV", "Irrigation"))
+Error in netcontrast(net, c("IV", "Irrigation")) : 
+  could not find function "netcontrast"
+> estimate <- -8.6958
+> lower <- -17.5112
+> upper <- 0.1196
+> 
+> se <- (upper - lower) / (2 * 1.96)
+> z <- estimate / se
+> p <- 2 * (1 - pnorm(abs(z)))
+> 
+> p
+[1] 0.05318591
+> funnel(
++   net,
++   type = "comparison",
++   studlab = TRUE
++ )
+Error in funnel.netmeta(net, type = "comparison", studlab = TRUE) : 
+  Argument 'order' with a meaningful order of treatments must be provided.
+  (see help page of funnel.netmeta for some examples).
+> funnel(
++   net,
++   type = "comparison",
++   order = c("Control", "Irrigation", "IV"),
++   studlab = TRUE,
++   main = "Comparison-adjusted funnel plot"
++ )
+Error: Argument 'type' must be "standard" or "contour".
+> install.packages("netmeta")
+--- Please select a CRAN mirror for use in this session ---
+trying URL 'https://cran.ma.imperial.ac.uk/bin/macosx/big-sur-arm64/contrib/4.5/netmeta_3.3-1.tgz'
+Content type 'application/x-gzip' length 2016455 bytes (1.9 MB)
+==================================================
+downloaded 1.9 MB
+
+
+The downloaded binary packages are in
+	/var/folders/tj/5xbq99054r357rnv37f07p740000gn/T//RtmpugA6ts/downloaded_packages
+> library(netmeta)
+> library(netmeta)
+> 
+> funnel(
++   net,
++   type = "comparison",
++   order = c("Control", "Irrigation", "IV"),
++   studlab = TRUE
++ )
+Error: Argument 'type' must be "standard" or "contour".
+> packageVersion("netmeta")
+[1] ‘3.3.1’
+> 
